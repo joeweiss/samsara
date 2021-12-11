@@ -266,15 +266,24 @@ function redraw()
   screen.move(left_x, y)
   screen.text("length: ")
   screen.move(right_x, y)
+
   local tempo = params:get("clock_tempo")
   local num_beats = params:get("num_beats")
   screen.text_right(num_beats.." beats, "..math.floor(tempo+0.5).." bpm")
   -- Draw beat to the screen
-  screen.move(left_x, y + 8)
-  -- screen.font_face(1)
-  -- screen.font_size(8)
   local sec_per_beat = 60 / tempo
   local beat = math.floor(position / sec_per_beat)
+  screen.move(left_x, y + 8)
+  local width = 108
+  local beat_width = width / num_beats
+  local display_width = ((position / sec_per_beat)) * beat_width
+  local beat_display_height = 1
+  screen.rect(10, 21, display_width, beat_display_height)
+  screen.fill()
+  -- screen.font_face(1)
+  -- screen.font_size(8)
+  screen.move(left_x, y + 8)
+  
   screen.text("beat " .. beat + 1 .. "/" .. num_beats)
   -- screen.font_size(8)
 
@@ -405,7 +414,6 @@ end
 function update_positions(voice, _position)
   position = _position
   is_screen_dirty = true
-  print(voice, position)
 end
 
 function set_record_mode(value)

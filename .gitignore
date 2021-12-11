@@ -40,3 +40,8 @@ luac.out
 *.hex
 
 TODO.md
+node_modules
+.nvmrc
+package-lock.json
+package.json
+restart.js

@@ -41,6 +41,7 @@ local is_screen_dirty = false
 local ext_clock_alert
 local ext_clock_alert_dismiss_metro
 local clear_confirm
+local position = "1"
 
 function init()
   init_params()
@@ -113,6 +114,10 @@ function init_softcut()
     softcut.level_input_cut(voice, voice, 1.0)
     softcut.rec_level(voice, rec_level)
     softcut.rec(voice, 1)
+    local polling_time = 0.05 -- Adjust the polling time here.
+    softcut.phase_quant(voice, polling_time) 
+    softcut.event_phase(update_positions)
+    softcut.poll_start_phase()
   end
   for voice=1,2 do
     softcut.play(voice, playing)
@@ -264,6 +269,14 @@ function redraw()
   local tempo = params:get("clock_tempo")
   local num_beats = params:get("num_beats")
   screen.text_right(num_beats.." beats, "..math.floor(tempo+0.5).." bpm")
+  -- Draw beat to the screen
+  screen.move(left_x, y + 8)
+  -- screen.font_face(1)
+  -- screen.font_size(8)
+  local sec_per_beat = 60 / tempo
+  local beat = math.floor(position / sec_per_beat)
+  screen.text("beat " .. beat + 1 .. "/" .. num_beats)
+  -- screen.font_size(8)
 
   if tap_tempo_square ~= nil then
     if (util.time() - tap_tempo_square) < 0.125 then
@@ -389,6 +402,12 @@ function set_loop_dur(tempo, num_beats)
   is_screen_dirty = true
 end
 
+function update_positions(voice, _position)
+  position = _position
+  is_screen_dirty = true
+  print(voice, position)
+end
+
 function set_record_mode(value)
   local record_mode = value
   if value == "Continuous" then record_mode = 1 elseif value == "One-Shot" then record_mode = 2 end
@@ -436,7 +455,7 @@ end
 
 function double_buffer()
   -- Duplicate the buffer immediately after the current buffer ends
-  local full_path = "/home/we/dust/code/samsara/tmp.wav"
+  local full_path = "/home/we/dust/code/samsara-time/tmp.wav"
   -- Write an additional second to disk to get nice cross-fade behavior
   softcut.buffer_write_stereo(full_path, 0, loop_dur + 1)
   softcut.buffer_read_stereo(full_path, 0, loop_dur, loop_dur + 1)
